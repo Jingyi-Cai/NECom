@@ -77,7 +77,7 @@ MATLAB license
 External Packages
 
 (9) The NECom-FShaP distribution contains third party software which are not licensed 
-    under the NECom-FShaP License (all contained in directory NECom-FShaP/codes/external). 
+    under the NECom-FShaP License (all contained in directory NECom-FShaP/codes/). 
     The license files for these packages are given in the respective subdirectories.
 
 Disclaimer
