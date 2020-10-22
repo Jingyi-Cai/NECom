@@ -1,83 +1,83 @@
-% Copyright (C) 2019 by Jingyi Cai, Siu Hung Joshua Chan
+% Copyright (C) 2019 by Jingyi Cai and Siu Hung Joshua Chan
 
-NECom-FShaP LICENSE
+NECom LICENSE
 -----------------------------------------------------------------------
 
 "LICENSEE" means any person who would like to use, copy,
-or modify the NECom-FShaP package or parts of it.
+or modify the NECom package or parts of it.
 
-"Standard Version" refers to the NECom-FShaP package 
+"Standard Version" refers to the NECom package 
 (including its source code) if it has not been modified.
 
-"Modified Parts" means parts of the NECom-FShaP package
+"Modified Parts" means parts of the NECom package
 (including source codes) that have been changed by the LICENSEE. 
 
-"Modified Version" refers to the NECom-FShaP package 
+"Modified Version" refers to the NECom package 
 if it contains Modified parts.
 
 "Distribute" means providing a copy of the Standard or Modified
-version of NECom-FShaP or of Modified parts to anyone else.
+version of NECom or of Modified parts to anyone else.
 
 
 Permission for Academic/Non-commercial Use and Modification Without Distribution
 
-(1) The LICENSEE is permitted to use the Standard Version of NECom-FShaP and create 
+(1) The LICENSEE is permitted to use the Standard Version of NECom and create 
     and use Modified Versions of it for any academic and non-commercial purpose 
     without restriction, provided that the LICENSEE does not Distribute the 
-    Standard or Modified Version of NECom-FShaP to anyone else.
+    Standard or Modified Version of NECom to anyone else.
 
 Commercial/Non-academic Use and Modification Without Distribution
 
-(2) Non-academic/commerical use of the Standard Version of NECom-FShaP and 
+(2) Non-academic/commerical use of the Standard Version of NECom and 
     creation and use of Modified Versions by the LICENSEE is permitted provided 
-    that he/she acquires a commercial license of NECom-FShaP and that he/she
+    that he/she acquires a commercial license of NECom and that he/she
     does not Distribute the Standard or Modified Version.
     For commercial use please contact: caijingyi171@gmail.com
 
-Distribution of Modified Parts of the NECom-FShaP package 
+Distribution of Modified Parts of the NECom package 
 
 (3) In extension to (1) and (2), the LICENSEE may distribute Modified (but not Unmodified) 
-    Parts of NECom-FShaP under any license and as source or in compiled form with 
+    Parts of NECom under any license and as source or in compiled form with 
     or without fee, provided 
 
     (a) that there remains an explicit dependency of the Modified Parts
-        on the Standard Version of NECom-FShaP and 
+        on the Standard Version of NECom and 
     (b) that the LICENSEE explicitly hints users of the Modified Parts that 
         use of the Modified Parts requires download and installation of the 
-        Standard Version of NECom-FShaP.
-    (c) that the NECom-FShaP Copyright notice is contained in the Modified Parts.
+        Standard Version of NECom.
+    (c) that the NECom Copyright notice is contained in the Modified Parts.
 
-(4) In extension to (3) the LICENSEE may inform the Copyright Holder of NECom-FShaP 
+(4) In extension to (3) the LICENSEE may inform the Copyright Holder of NECom 
     about the developed Modified Parts, so that the Copyright Holder may include the 
     modifications in the Standard Version (the LICENSEE would then be mentioned in 
-    the CONTRIBUTORS list) or promote it as add-on packages on the NECom-FShaP 
+    the CONTRIBUTORS list) or promote it as add-on packages on the NECom 
     homepage. For those cases please contact: caijingyi171@gmail.com 
 
-Distribution of unmodified parts or of the Modified or Standard Version of NECom-FShaP 
+Distribution of unmodified parts or of the Modified or Standard Version of NECom 
 
 (5) Distribution of unmodified parts or of the Modified or Standard Version of 
-    NECom-FShaP by the LICENSEE is not permitted.  
+    NECom by the LICENSEE is not permitted.  
 
 Exceptions of Distribution rules 
 
 (6) Exceptions for the Distribution rules (3) and (5) can be requested 
     via caijingyi171@gmail.com 
 
-Publishing results obtained with NECom-FShaP
+Publishing results obtained with NECom
 
-(7) When publishing results gained by using NECom-FShaP, the LICENSEE agrees to cite  
-    NECom-FShaP with appropriate references.
+(7) When publishing results gained by using NECom, the LICENSEE agrees to cite  
+    NECom with appropriate references.
 
 MATLAB license 
 
-(8) We remind the LICENSEE that use of NECom-FShaP requires the commercial software 
-    MATLAB. In order to get a fully functional version of NECom-FShaP, the LICENSEE
+(8) We remind the LICENSEE that use of NECom requires the commercial software 
+    MATLAB. In order to get a fully functional version of NECom, the LICENSEE
     has to acquire an appropriate MATLAB license by himself.
 
 External Packages
 
-(9) The NECom-FShaP distribution contains third party software which are not licensed 
-    under the NECom-FShaP License (all contained in directory NECom-FShaP/codes/). 
+(9) The NECom distribution contains third party software which are not licensed 
+    under the NECom License (all contained in directory NECom/codes/). 
     The license files for these packages are given in the respective subdirectories.
 
 Disclaimer
