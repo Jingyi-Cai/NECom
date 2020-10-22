@@ -318,14 +318,6 @@ switch thesolver
     theproblem=opti('sense',1,'fun',fun,'bounds',lb,ub,'lin',A,rl,ru,'nl',nlcon,cl,cu,'xtype',vtype,'options',opti_options);
     [x,fval,exitflag,info]=solve(theproblem,startX);
     % or using 
-    case 'scip'
-    [fun,nlcon]=objNnonlinear(themodel,index,parameters);
-    startX=zeros(length(lb),1);% initial guesses
-    opti_options=optiset('solver','nomad','display','iter');
-    theproblem=opti('sense',1,'fun',fun,'bounds',lb,ub,'lin',A,rl,ru,'nl',nlcon,cl,cu,'xtype',vtype,'options',opti_options);
-    [x,fval,exitflag,info]=solve(theproblem,startX);    
-%    Opt = opti('sense',1,'fun',fun,'ineq',A,b,'nlmix',nlcon,nlrhs,nle,'bounds',lb,ub,...
-%           'options',optiset('solver','scip'))
     case 'gurobi'
         thec=zeros(size(A,2),1);
         thec(themodel.spBm)=1;

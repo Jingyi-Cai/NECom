@@ -2,13 +2,13 @@
 % demonstrative example for NECom and FShaP simulations
 % Jingyi Cai 2019-8
 clear;clc;
+thesolver='gurobi'; % choose from 'baron','bonmin' and 'gurobi', bonmin solver requires installation of OPTI toolbox on Windows 
 % load the community model, which consists of two individual models,
-load ../themodel.mat themodel
+%load ../themodel.mat themodel
 
+% or directly create the community model using CobraToolbox
 
-
-
-
+createModelCase1
 
 
 
@@ -70,19 +70,22 @@ x1=solfba1.x;
 %  different methods in paralell we set Relative abundance for sp1 and sp2:
 X=[0.5,0.5]; % they are 1:1
 % run OptCom simulation
-[x2,exitflag2,index2,Lmodel2,fluxes2,info2]=OptCom(themodel,parameters,X);
+[x2,exitflag2,index2,Lmodel2,fluxes2,info2]=OptCom(themodel,parameters,X,thesolver);
 % run NECom simulation
-[x3,exitflag3,index3,Lmodel3,fluxes3,info3]=NECOM(themodel,parameters,X);
+[x3,exitflag3,index3,Lmodel3,fluxes3,info3]=NECOM(themodel,parameters,X,thesolver);
 Indrxns=find(themodel.rxnSps>=1);
 allfluxes=[x1(Indrxns),x2(Indrxns),x3(Indrxns)];
 % if MS Office Excel install we can write it into the excel file. 
 % need to uncheck all COM Add-in in Excel options to make it works
 try xlswrite('pd.xls',allfluxes,'reactions','H2');
+    fprintf('fluxes predicted by jointFBA, OptCom and NEcom has been saved in pd.xls')
 catch
+    fprintf('fluxes predicted by jointFBA, OptCom and NEcom can be found in allfluxes ')
 end
 
 
-%-----------------------------end-------------------------------
+
+
 
 
 

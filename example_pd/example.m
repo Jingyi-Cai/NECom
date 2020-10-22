@@ -2,6 +2,7 @@
 % demonstrative example for NECom and FShaP simulations
 % Jingyi Cai 2019-8
 clear;clc;
+thesolver='gurobi'; % choose from 'baron','bonmin' and 'gurobi', bonmin solver requires installation of OPTI toolbox on Windows 
 % load the community model, which consists of two individual models,
 %load ../themodel.mat themodel
 
@@ -69,44 +70,20 @@ x1=solfba1.x;
 %  different methods in paralell we set Relative abundance for sp1 and sp2:
 X=[0.5,0.5]; % they are 1:1
 % run OptCom simulation
-[x2,exitflag2,index2,Lmodel2,fluxes2,info2]=OptCom(themodel,parameters,X,'gurobi');
+[x2,exitflag2,index2,Lmodel2,fluxes2,info2]=OptCom(themodel,parameters,X,thesolver);
 % run NECom simulation
-[x3,exitflag3,index3,Lmodel3,fluxes3,info3]=NECOM(themodel,parameters,X,'gurobi');
+[x3,exitflag3,index3,Lmodel3,fluxes3,info3]=NECOM(themodel,parameters,X,thesolver);
 Indrxns=find(themodel.rxnSps>=1);
 allfluxes=[x1(Indrxns),x2(Indrxns),x3(Indrxns)];
 % if MS Office Excel install we can write it into the excel file. 
 % need to uncheck all COM Add-in in Excel options to make it works
 try xlswrite('pd.xls',allfluxes,'reactions','H2');
+    fprintf('fluxes predicted by jointFBA, OptCom and NEcom has been saved in pd.xls or pd.csv\n')
 catch
+    fprintf('fluxes predicted by jointFBA, OptCom and NEcom can be found in allfluxes matrix\n')
 end
 
 
-%---------------FShaP ----------------------------------------------
-
-% prepare the state TransitionMap, the range of crossfeeding of A and B 
-% will be set the maximal
-% crossfeeding values are custom-setup, but in this example we set them as the
-% solution values of Joint-FBA(optCom has the same values), in order to
-% test if Joint-FBA(and OptCom) will predict Nash equilibria
-
-maxrates(1)=-x2(parameters.sub_indExSpi(1)); % the absolute flux of EX_A_2_sp1
-maxrates(2)=-x2(parameters.sub_indExSpi(4)); % the absolute flux of EX_B_2_sp2
-num_ins=[5,5];% there are total 5X5 states on the map
-EX_Rflux{1,1}=linspace(0,maxrates(1),num_ins(1)); %  crossfeeding rates of A, or X axis ticks of the map
-EX_Rflux{1,2}=linspace(0,maxrates(2),num_ins(2)); %  crossfeeding rates of B, or Y axis ticks of the map
-% controling reactions are EX_A_2_sp1 EX_B_2_sp2 for uptake of A, B respectively  
-% by controling these two uptake reactions we can capture state for StateTransitionMap
-ctrlinds=parameters.sub_indExSpi([3,2]); 
-% generate payoff matrices(FShaP) for the state transition map
-theresults=StateTransitionMap(themodel,parameters,ctrlinds,EX_Rflux);
-
-% if MS Office Excel install we can write it into the excel file. 
-% need to uncheck all COM Add-in in Excel options to make it works
-theVarRxns=themodel.rxns(ctrlinds);
-EX_Rflux=[EX_Rflux{1,1};EX_Rflux{1,2}];
-try printMatrixes(theresults,theVarRxns,EX_Rflux,[4,4],'pd.xls')
-catch
-end
 
 
 
