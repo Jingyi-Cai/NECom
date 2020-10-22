@@ -1,4 +1,4 @@
-function [x,exitflag,index,Lmodel,fluxes,info]=NECOM(themodel,parameters,X)
+function [x,exitflag,index,Lmodel,fluxes,info]=NECOM(themodel,parameters,X,thesolver)
 
 %{ 
 Function: Nash Equilibria predictor for microbial COMunity
@@ -13,6 +13,9 @@ x                  solution of NECom
 %}
 
 % Jingyi Cai 2018.10
+if nargin<4
+    thesolver='gurobi';
+end
 
 bigM=1000;
 %-----------------------------------parameters preparation-----------------
@@ -286,43 +289,70 @@ parameters.X=X;
 
 parameters.number_sps=number_sps;
 
-% prepare the objective function
-commandstr= 'fun = @(x) 0'  ;           
-for h=1:number_sps
-    commandstr=[commandstr,'+x(themodel.spBm(',num2str(h),'))'];
-end
-eval(commandstr)
 
-% check if baron solver is exist
 
-    % if No license for the Baron solver, one can try OPTI, a free platfrom provide multiple MINLP
-    % slover, from http://www.inverseproblem.co.nz/OPTI/
-    constr=NL_constraint(themodel,index,parameters);
-    eval(constr)
-    % if baron solver is not available, try Matlab solver fmincon
-    A=Lmodel.Model.A;
-    rl=Lmodel.Model.lhs;
-    ru=Lmodel.Model.rhs;
-    lb=Lmodel.Model.lb; % decision variable lower bounds
-    ub=Lmodel.Model.ub; % decision variable upper bounds
-    cl=zeros(number_sps,1);
-    cu=zeros(number_sps,1);    
-    vtype=Lmodel.Model.vtype; % 
 
-if exist('baron');
+
+% if baron solver is not available, try Matlab solver fmincon
+A=Lmodel.Model.A;
+rl=Lmodel.Model.lhs;
+ru=Lmodel.Model.rhs;
+lb=Lmodel.Model.lb; % decision variable lower bounds
+ub=Lmodel.Model.ub; % decision variable upper bounds
+cl=zeros(number_sps,1);
+cu=zeros(number_sps,1);    
+vtype=Lmodel.Model.vtype; % 
+
+switch thesolver
+    case 'baron'
     % the non-linear constraint
+    [fun,nlcon]=objNnonlinear(themodel,index,parameters);
     startX=[];
     [x,fval,exitflag,info] = baron(fun,A,rl,ru,lb,ub,nlcon,cl,cu,vtype,startX,...
     baronset('filekp',1,'sense','max','NumSol',1,'MaxTime',10000));
-elseif exist('opti');
+    case 'bonmin'
     % using bonmin solver 
+    [fun,nlcon]=objNnonlinear(themodel,index,parameters);
     startX=zeros(length(lb),1);% initial guesses
     opti_options=optiset('solver','bonmin','display','iter');
     theproblem=opti('sense',1,'fun',fun,'bounds',lb,ub,'lin',A,rl,ru,'nl',nlcon,cl,cu,'xtype',vtype,'options',opti_options);
     [x,fval,exitflag,info]=solve(theproblem,startX);
     % or using 
-else
-    error('MINLP solver not found, Open-source toolbox OPTI(www.inverseproblem.co.nz/OPTI/, for Windows only) are suggested')
+    case 'scip'
+    [fun,nlcon]=objNnonlinear(themodel,index,parameters);
+    startX=zeros(length(lb),1);% initial guesses
+    opti_options=optiset('solver','nomad','display','iter');
+    theproblem=opti('sense',1,'fun',fun,'bounds',lb,ub,'lin',A,rl,ru,'nl',nlcon,cl,cu,'xtype',vtype,'options',opti_options);
+    [x,fval,exitflag,info]=solve(theproblem,startX);    
+%    Opt = opti('sense',1,'fun',fun,'ineq',A,b,'nlmix',nlcon,nlrhs,nle,'bounds',lb,ub,...
+%           'options',optiset('solver','scip'))
+    case 'gurobi'
+        thec=zeros(size(A,2),1);
+        thec(themodel.spBm)=1;
+        model.A=[A;A];
+        model.obj=thec;
+        model.rhs=[rl;ru];
+        model.sense=[char('>'*ones(1,length(rl))),char('<'*ones(1,length(rl)))];
+        model.vtype =vtype;
+        model.lb=lb;
+        model.ub=ub;
+        %model.varnames = names;
+        model.modelsense='max';
+        % defining quaralic constraint
+        model=NL_constraint2(themodel,model,index,parameters,length(lb));
+        %
+        params.outputflag = 0;
+        params.NonConvex = 2;
+        result = gurobi(model, params);
+        x=result.x;
+        if strcmp(result.status,'OPTIMAL')
+            exitflag=1;
+        else
+            exitflag=0;
+        end
+        info=result.status;
+    otherwise
+    error('MINLP solver not found, Open-source toolbox OPTI(www.inverseproblem.co.nz/OPTI/, for Windows only) or Gurobi are suggested')
 end
 if isempty(x)
     exitflag=-10;
@@ -345,7 +375,7 @@ load tempInfo.mat
 end
 
 
-function constr=NL_constraint(themodel,index,parameters)
+function nlcon=NL_constraint(themodel,index,parameters)
 
 
 
@@ -407,12 +437,106 @@ end
 
     constr(end)=[];
     constr=[constr,'];'];
+    
+    eval(constr)
+    
 end
 
 
 
+function model=NL_constraint2(themodel,model,index,parameters,nvar)
 
 
 
+limitednonzero_lb=parameters.limitednonzero_lb;
+limitednonzero_ub=parameters.limitednonzero_ub;
+
+limitednonzero_lbind=themodel.rxnSps(limitednonzero_lb);
+limitednonzero_ubind=themodel.rxnSps(limitednonzero_ub);
+number_sps=parameters.number_sps;
+sub_exSpi=parameters.sub_exSpi;
+sub_indExSpi=parameters.sub_indExSpi;
 
 
+for i=1:number_sps
+limitednonzero_lbs{i,1}=limitednonzero_lb(find(limitednonzero_lbind==i));
+limitednonzero_ubs{i,1}=limitednonzero_ub(find(limitednonzero_ubind==i));
+end
+
+
+%constr='nlcon=@(x)[';
+
+lb1=themodel.lb;
+ub1=themodel.ub;
+spBm=themodel.spBm;
+%for example
+% eval('nlcon = @(x) [x(2391)+2.85*x(3907)-2.85*x(7738)-conNO2(i)*x(4171)+conNO2(i)*x(8002)
+%-6.526e-05*x(9497)-6.526e-05*x(9498)-x(14396)*x(3738)*options.X(2);x(3660)-conGlc(i)*x(6259)
+%-x(14397)*x(3695)*options.X(1)-x(14398)*x(3699)*options.X(1)]');
+%thecnt=0;
+for i=1:number_sps
+    model.quadcon(i).Qrow = [];
+    model.quadcon(i).Qcol = [];
+    model.quadcon(i).Qval = [];
+    model.quadcon(i).q = sparse(nvar,1);
+    model.quadcon(i).rhs = 0;
+    model.quadcon(i).sense = '=';
+    model.quadcon(i).name = ['bilinear',num2str(i)];
+
+    % first the biomass reaction
+    model.quadcon(i).q(spBm(i))=1;
+    %constr=strcat(constr,['x(',num2str(spBm(i)),')']);
+
+    for k=1:length(limitednonzero_lbs{i,1})  
+    % 
+    %itemlb=['+',['(',num2str(lb1(limitednonzero_lbs{i,1}(k))),')','*'] , ['x(',num2str(index.var.muLmodel(limitednonzero_lbs{i,1}(k))),')'] ];
+
+    model.quadcon(i).q(index.var.muLmodel(limitednonzero_lbs{i,1}(k)))=lb1(limitednonzero_lbs{i,1}(k));
+    %constr=strcat(constr,itemlb);
+    end
+
+    for k=1:length(limitednonzero_ubs{i,1})      
+    %itemub=['-',['(',num2str(ub1(limitednonzero_ubs{i,1}(k))),')','*'] , ['x(',num2str(index.var.muUP(limitednonzero_ubs{i,1}(k))),')'] ];
+
+    model.quadcon(i).q(index.var.muUP(limitednonzero_ubs{i,1}(k)))=-ub1(limitednonzero_ubs{i,1}(k));
+    %constr=strcat(constr,itemub);
+    end
+
+%    
+    indi=find(sub_exSpi==i);
+
+    %NL_term='';
+    for p=1:numel(indi)
+        model.quadcon(i).Qrow=[model.quadcon(i).Qrow,index.var.omega(indi(p))];
+        %omegaitem=['x(',num2str(index.var.omega(indi(p))),')'];
+        %ubstr=['x(',num2str(index.var.ub(indi(p))),')'];
+        model.quadcon(i).Qcol=[model.quadcon(i).Qcol,index.var.ub(indi(p))];
+        model.quadcon(i).Qval=[model.quadcon(i).Qval,-1];
+        %NL_term=[NL_term,'-',omegaitem,'*',ubstr];
+    end
+
+    %constr=[constr,NL_term,';'];
+
+end
+
+    %constr(end)=[];
+    %constr=[constr,'];'];
+end
+
+function [fun,nlcon]=objNnonlinear(themodel,index,parameters)
+
+% prepare the objective function
+commandstr= 'fun = @(x) 0'  ;      
+number_sps=length(parameters.sps);
+for h=1:number_sps
+    commandstr=[commandstr,'+x(themodel.spBm(',num2str(h),'))'];
+end
+eval(commandstr)
+
+% check if baron solver is exist
+% if No license for the Baron solver, one can try OPTI, a free platfrom provide multiple MINLP
+% slover, from http://www.inverseproblem.co.nz/OPTI/
+constr=NL_constraint(themodel,index,parameters);
+
+
+end
