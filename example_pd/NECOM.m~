@@ -230,7 +230,7 @@ A=[sparse(n_all_model,history_length_mu_LB_1),-matrix_mu,matrix_mu,...
         sparse(n_all_model,history_length_psi-current_length_lambda_1),psi_matrix,...
         sparse(n_all_model,current_length_delta-current_length_psi)];
 rhs=C;
-connames=char(strcat('S*lambda_1+mu_UB-mu_LB+psi=c',themodel.rxns(themodel.rxnSps>=1)));
+connames=char(strcat('S*lambda_1+mu_UB-mu_LB + psi = c',themodel.rxns(themodel.rxnSps>=1)));
 Lmodel=add_constraints(Lmodel,lhs,A,rhs,connames);   
 index.con.dv = nCon + 1 : nCon + n_all_model;
 nCon = nCon + n_all_model;
@@ -252,7 +252,7 @@ lhs=-inf(parameters.numSub_ExRxn,1);
 A=[sparse(parameters.numSub_ExRxn,history_length_vut), X_vector,...
     sparse(parameters.numSub_ExRxn,history_length_ub-current_length_vut),-speye(parameters.numSub_ExRxn)];
 rhs=zeros(parameters.numSub_ExRxn,1);
-connames=char(strcat('Xn*V_ut-ub<=0_',themodel.rxns(parameters.sub_indExSpi)));
+connames=char(strcat('Xn V_ut-ub<=0_',themodel.rxns(parameters.sub_indExSpi)));
 Lmodel=add_constraints(Lmodel,lhs,A,rhs,connames);
 index.con.VutBounds = nCon + 1 : nCon + parameters.numSub_ExRxn;
 nCon = nCon + parameters.numSub_ExRxn;

@@ -1,0 +1,20 @@
+\ Model _copy
+\ LP format - for model browsing. Use MPS format to capture full model detail.
+Maximize
+ 
+Subject To
+ V-V_ut+V_ex=0_EX_B_2_sp1_lb: v_1_EX_B_2_sp1 + vut_EX_B_2_sp1
+   - vex_EX_B_2_sp1 >= 0
+ Xn*V_ut-ub<=0_EX_B_2_sp1_ub: 0.5 vut_EX_B_2_sp1 - ub_EX_B_2_sp1 <= 0
+ v_ut=max(0,v_oth)_1_EX_B_2_sp1_ub: - 0.5 v_1_EX_B_2_sp2 + ub_EX_B_2_sp1
+   - 1000 delta_EX_B_2_sp1 <= 0
+ v_ut=max(0,v_oth)_2_EX_B_2_sp1_ub: ub_EX_B_2_sp1 + 1000 delta_EX_B_2_sp1
+   <= 1000
+Bounds
+ -infinity <= v_1_EX_B_2_sp1 <= -5
+ -infinity <= v_1_EX_B_2_sp2 <= -5
+ vut_EX_B_2_sp1 free
+ ub_EX_B_2_sp1 free
+Binaries
+ delta_EX_B_2_sp1
+End

@@ -1,0 +1,80 @@
+\ Model _copy
+\ LP format - for model browsing. Use MPS format to capture full model detail.
+Maximize
+ 
+Subject To
+ Xn*W+psi=0_EX_A_2_sp1_lb: psi_EX_A_2_sp1 + 0.5 omega_EX_A_2_sp1 >= 0
+ S*lambda_1+mu_UB-mu_LB+psi=cT_S_sp1_lb: - lambda_S[e]_sp1_1
+   - mu_LB_T_S_sp1 + mu_UB_T_S_sp1 + lambda_S[c]_sp1_1 >= 0
+ S*lambda_1+mu_UB-mu_LB+psi=cT_A_sp1_lb: - lambda_A[e]_sp1_1
+   - mu_LB_T_A_sp1 + mu_UB_T_A_sp1 + lambda_A[c]_sp1_1 >= 0
+ S*lambda_1+mu_UB-mu_LB+psi=cR_1_sp1_lb: - lambda_S[c]_sp1_1
+   - 2 lambda_h[c]_sp1_1 + lambda_P[c]_sp1_1 - mu_LB_R_1_sp1
+   + mu_UB_R_1_sp1 - 2 lambda_adp[c]_sp1_1 + 2 lambda_atp[c]_sp1_1 >= 0
+ S*lambda_1+mu_UB-mu_LB+psi=cR_2_sp1_lb: lambda_B[c]_sp1_1
+   + lambda_h[c]_sp1_1 - lambda_P[c]_sp1_1 + lambda_adp[c]_sp1_1
+   - lambda_atp[c]_sp1_1 - mu_LB_R_2_sp1 + mu_UB_R_2_sp1 >= 0
+ S*lambda_1+mu_UB-mu_LB+psi=cR_3_sp1_lb: lambda_A[c]_sp1_1
+   + 3 lambda_h[c]_sp1_1 - lambda_P[c]_sp1_1 + 3 lambda_adp[c]_sp1_1
+   - 3 lambda_atp[c]_sp1_1 - mu_LB_R_3_sp1 + mu_UB_R_3_sp1 >= 0
+ S*lambda_1+mu_UB-mu_LB+psi=cOBJ_sp1_lb: - 3 lambda_A[c]_sp1_1
+   - 3 lambda_B[c]_sp1_1 + 5 lambda_h[c]_sp1_1 + 5 lambda_adp[c]_sp1_1
+   - 5 lambda_atp[c]_sp1_1 - mu_LB_OBJ_sp1 + mu_UB_OBJ_sp1
+   + lambda_biomass[c]_sp1_1 >= 0
+ S*lambda_1+mu_UB-mu_LB+psi=cBiomass_sp1_lb: - lambda_biomass[c]_sp1_1
+   - mu_LB_Biomass_sp1 + mu_UB_Biomass_sp1 >= 1
+ S*lambda_1+mu_UB-mu_LB+psi=cEX_B_2_sp1_lb: psi_EX_B_2_sp1
+   - lambda_B[e]_sp1_1 - mu_LB_EX_B_2_sp1 + mu_UB_EX_B_2_sp1 >= 0
+ v_ut=max(0,v_oth)_3_EX_A_2_sp1_lb: - 0.5 v_1_EX_A_2_sp2 + ub_EX_A_2_sp1
+   >= 0
+ S*lambda_1+mu_UB-mu_LB+psi=cEX_S_sp1_ub: - mu_LB_EX_S_sp1 + mu_UB_EX_S_sp1
+   - lambda_S[e]_sp1_1 <= 0
+ S*lambda_1+mu_UB-mu_LB+psi=cT_B_sp1_ub: - lambda_B[e]_sp1_1
+   - mu_LB_T_B_sp1 + mu_UB_T_B_sp1 + lambda_B[c]_sp1_1 <= 0
+ S*lambda_1+mu_UB-mu_LB+psi=cEX_A_2_sp1_ub: psi_EX_A_2_sp1
+   - lambda_A[e]_sp1_1 - mu_LB_EX_A_2_sp1 + mu_UB_EX_A_2_sp1 <= 0
+ v_ut=max(0,v_oth)_1_EX_A_2_sp1_ub: - 0.5 v_1_EX_A_2_sp2 + ub_EX_A_2_sp1
+   - 1000 delta_EX_A_2_sp1 <= 0
+ v_ut=max(0,v_oth)_1_EX_B_2_sp1_ub: - 0.5 v_1_EX_B_2_sp2 + ub_EX_B_2_sp1
+   - 1000 delta_EX_B_2_sp1 <= 0
+ v_ut=max(0,v_oth)_2_EX_A_2_sp1_ub: ub_EX_A_2_sp1 + 1000 delta_EX_A_2_sp1
+   <= 1000
+ v_ut=max(0,v_oth)_2_EX_B_2_sp1_ub: ub_EX_B_2_sp1 + 1000 delta_EX_B_2_sp1
+   <= 1000
+ bilinear1: v_1_Biomass_sp1 - 10 mu_LB_EX_S_sp1 - 5 mu_LB_EX_A_2_sp1
+   - 5 mu_LB_EX_B_2_sp1 + [ - omega_EX_A_2_sp1 * ub_EX_A_2_sp1
+   - omega_EX_B_2_sp1 * ub_EX_B_2_sp1 ] = 0
+Bounds
+ -infinity <= v_1_Biomass_sp1 <= 1.666666666666667
+ v_1_EX_A_2_sp2 = 5
+ -infinity <= v_1_EX_B_2_sp2 <= -5
+ psi_EX_A_2_sp1 free
+ omega_EX_A_2_sp1 free
+ -infinity <= psi_EX_B_2_sp1 <= 0
+ omega_EX_B_2_sp1 free
+ mu_LB_EX_S_sp1 free
+ lambda_S[e]_sp1_1 free
+ lambda_A[e]_sp1_1 free
+ lambda_B[e]_sp1_1 free
+ -infinity <= mu_UB_T_S_sp1 <= 0
+ lambda_S[c]_sp1_1 free
+ -infinity <= mu_UB_T_A_sp1 <= 0
+ lambda_A[c]_sp1_1 free
+ -infinity <= mu_LB_T_B_sp1 <= 0
+ lambda_B[c]_sp1_1 free
+ lambda_h[c]_sp1_1 free
+ lambda_P[c]_sp1_1 free
+ -infinity <= mu_UB_R_1_sp1 <= 0
+ lambda_adp[c]_sp1_1 free
+ lambda_atp[c]_sp1_1 free
+ -infinity <= mu_UB_R_2_sp1 <= 0
+ -infinity <= mu_UB_R_3_sp1 <= 0
+ -infinity <= mu_UB_OBJ_sp1 <= 0
+ lambda_biomass[c]_sp1_1 free
+ -infinity <= mu_UB_Biomass_sp1 <= 0
+ mu_LB_EX_A_2_sp1 free
+ -infinity <= mu_UB_EX_B_2_sp1 <= 0
+ ub_EX_A_2_sp1 free
+Binaries
+ delta_EX_A_2_sp1 delta_EX_B_2_sp1
+End

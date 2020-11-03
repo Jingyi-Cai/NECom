@@ -83,6 +83,29 @@ catch
     fprintf('fluxes predicted by jointFBA, OptCom and NEcom can be found in allfluxes matrix\n')
 end
 
+fprintf('Test if the flux predicted by JointFBA is feasible to NECom...');
+externalconstr.lbindices=1:length(themodel.rxns);
+externalconstr.ubindices=1:length(themodel.rxns);
+externalconstr.lb=x1(Indrxns);
+externalconstr.ub=x1(Indrxns);
+[xtest1,exitflagtest1,indextest1,Lmodeltest1,fluxestest1,infotest1]=NECOM(themodel,parameters,X,thesolver,externalconstr,'FBATest');
+fprintf(['The flux predicted by JointFBA is ',infotest1, ' to NECom\n']);
+
+fprintf('Test if the flux predicted by OptCom is feasible to NECom...');
+externalconstr.lbindices=1:length(themodel.rxns);
+externalconstr.ubindices=1:length(themodel.rxns);
+externalconstr.lb=x2(Indrxns);
+externalconstr.ub=x2(Indrxns);
+[xtest2,exitflagtest2,indextest2,Lmodeltest2,fluxestest2,infotest2]=NECOM(themodel,parameters,X,thesolver,externalconstr,'OptComTest');
+fprintf(['The flux predicted by OptCom is ',infotest2, ' to NECom\n']);
+
+%------------To determine the minimal subset of constraints (including bounds) responsible for
+%the infeasibility the model should be exported to python environment,
+%where we can call Model.computellS() to determine the minimal subset of
+%infeasible constraints and bounds
+fprintf('please open jupyter notebook and run checkInfeasibility.ipynb to find the minimal subset of constraints and bounds that JointFBA solution fails to satisfy\n')
+
+
 
 
 
