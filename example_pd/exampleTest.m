@@ -1,6 +1,7 @@
 % 
-% demonstrative example for NECom and FShaP simulations
-% Jingyi Cai 2019-8
+% demonstrative example for NECom and simulations
+% This example is requested by a reviewer. 
+% Jingyi Cai 2020-10
 clear;clc;
 thesolver='gurobi'; % choose from 'baron','bonmin' and 'gurobi', bonmin solver requires installation of OPTI toolbox on Windows 
 % load the community model, which consists of two individual models,
@@ -8,7 +9,7 @@ thesolver='gurobi'; % choose from 'baron','bonmin' and 'gurobi', bonmin solver r
 
 % or directly create the community model using CobraToolbox
 
-createModelCase2
+createModelTest
 
 
 
@@ -45,7 +46,7 @@ N species. )
 % they are given an order 
 parameters.cf_order=[1;2];
 % find their reaction indices in the community model:
-parameters.sub_indExSpi=[41;47];
+parameters.sub_indExSpi=[41;48];
 % number of crossfeeding reactions:
 parameters.numSub_ExRxn=length(parameters.sub_indExSpi);
 % since they are crossfeeding reactions for A,A so their metabolite number are:  
@@ -56,7 +57,7 @@ parameters.sub_exSpi=[1;2];
 % crossfeeding reactions that can affect the availability of substrate
 % uptaken by other species: EX_A_2_sp2  EX_A_2_sp1  and
 % their indices:
-parameters.other_Ex_all=[47;41];
+parameters.other_Ex_all=[48;41];
 % they belong to sp2,sp2,sp1,sp1 respectively:
 parameters.other_sp_ind=[2;1];
 % mapping to the reaction they may affect(refering to cf_order):
@@ -64,7 +65,7 @@ parameters.order_other=[1;2];
 
 %---------------Final state predictions----------------------------
 % run Joint-FBA simulation
-solfba1=fba(themodel); % Flux Balance Analysis
+[solfba1,Lmodel1,index1]=fba(themodel0); % Flux Balance Analysis
 x1=solfba1.x;
 %  joint-FBA only supports abundance ratio of 1:1, in order to compare 
 %  different methods in paralell we set Relative abundance for sp1 and sp2:
@@ -77,13 +78,15 @@ Indrxns=find(themodel.rxnSps>=1);
 allfluxes=[x1(Indrxns),x2(Indrxns),x3(Indrxns)];
 % if MS Office Excel install we can write it into the excel file. 
 % need to uncheck all COM Add-in in Excel options to make it works
-writeCbModel(themodel,'xls','modeltext.xls')
-try xlswrite('modeltext.xls',allfluxes,'Reaction List','H2');
+writeCbModel(themodel,'xls','modeltest.xls')
+try xlwrite('modeltext.xls',allfluxes,'Reaction List','H2');xlwrite('modeltext.xls',{'JointFBA','OptCom','NECom'},'Reaction List','H1');
     fprintf('fluxes predicted by jointFBA, OptCom and NEcom has been saved in modeltext.xls or modeltext.csv\n')
 catch
     fprintf('fluxes predicted by jointFBA, OptCom and NEcom can be found in allfluxes matrix\n')
 end
 
+
+%{
 fprintf('Test if the flux predicted by JointFBA is feasible to NECom...');
 externalconstr.lbindices=1:length(themodel.rxns);
 externalconstr.ubindices=1:length(themodel.rxns);
@@ -106,7 +109,7 @@ fprintf(['The flux predicted by OptCom is ',infotest2, ' to NECom\n']);
 %infeasible constraints and bounds
 fprintf('please open jupyter notebook and run checkInfeasibility.ipynb to find the minimal subset of constraints and bounds that JointFBA solution fails to satisfy\n')
 %------------Further Test-----------------------------------------------
-
+%}
 
 
 
