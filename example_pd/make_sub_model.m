@@ -34,7 +34,9 @@ model_new.lb=model.lb(sel_rxn_ind);
 model_new.ub=model.ub(sel_rxn_ind);
 model_new.S=model.S(sel_met_ind,sel_rxn_ind);
 model_new.c=model.c(sel_rxn_ind);
-model_new.rev=model.rev(sel_rxn_ind);
+if isfield(model,'rev')
+    model_new.rev=model.rev(sel_rxn_ind);
+end
 if community_flag==1
 model_new.spBm=model.spBm;
 model_new.rxnSps=model.rxnSps(model.rxnSps>=1);

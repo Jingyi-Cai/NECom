@@ -7,7 +7,7 @@ thesolver='gurobi'; % choose from 'baron','bonmin' and 'gurobi', bonmin solver r
 %load ../themodel.mat themodel
 
 % or directly create the community model using CobraToolbox
-
+filename='pd.xls';
 createModelCase1
 
 
@@ -62,9 +62,10 @@ parameters.other_sp_ind=[2;2;1;1];
 % mapping to the reaction they may affect(refering to cf_order):
 parameters.order_other=[1;2;3;4];
 
+
 %---------------Final state predictions----------------------------
 % run Joint-FBA simulation
-solfba1=fba(themodel); % Flux Balance Analysis
+[solfba1,Lmodel1,index1]=fba(themodel0); % Flux Balance Analysis
 x1=solfba1.x;
 %  joint-FBA only supports abundance ratio of 1:1, in order to compare 
 %  different methods in paralell we set Relative abundance for sp1 and sp2:
@@ -77,7 +78,7 @@ Indrxns=find(themodel.rxnSps>=1);
 allfluxes=[x1(Indrxns),x2(Indrxns),x3(Indrxns)];
 % if MS Office Excel install we can write it into the excel file. 
 % need to uncheck all COM Add-in in Excel options to make it works
-try xlswrite('pd.xls',allfluxes,'reactions','H2');
+try xlswrite(filename,allfluxes,'reactions','H2');
     fprintf('fluxes predicted by jointFBA, OptCom and NEcom has been saved in pd.xls or pd.csv\n')
 catch
     fprintf('fluxes predicted by jointFBA, OptCom and NEcom can be found in allfluxes matrix\n')
@@ -103,12 +104,58 @@ fprintf(['The flux predicted by OptCom is ',infotest2, ' to NECom\n']);
 %the infeasibility the model should be exported to python environment,
 %where we can call Model.computellS() to determine the minimal subset of
 %infeasible constraints and bounds
-fpintf('please open jupyter notebook and run checkInfeasibility.ipynb to find the minimal subset of constraints and bounds that JointFBA solution fail to satisfy')
+fprintf('please open jupyter notebook and run checkInfeasibility.ipynb to find the minimal subset of constraints and bounds that JointFBA solution fails to satisfy\n')
+
+
+%-------------Fix Individual species with Joint FBA solution and------------------
+
+subModels=[];solutions={};number_sps=length(themodel.spBm);
+%fix the lb and ub of the crossfeeding reactions to the crossfeeding fluxes
+themodel_1=themodel;
+%setting environment to individual model according to predictions 
+
+posexinds=find(x1(parameters.other_Ex_all)>0);
+
+thesecInds=parameters.other_Ex_all(posexinds);
+% calculate the uptake rate based on export of other species 
+spCoef=X(parameters.other_sp_ind)./X(parameters.sub_exSpi);
+avaibleUpRates=x1(thesecInds).*spCoef(posexinds)';
+% setting all lb based on uptake availability
+themodel_1.lb(parameters.sub_indExSpi)=0;
+uptake_ids=parameters.sub_indExSpi(posexinds);
+themodel_1.lb(uptake_ids)=-avaibleUpRates;
 
 
 
 
 
+
+for k=1:number_sps
+    subModels{k,1}=make_sub_model(themodel_1,find(themodel_1.rxnSps==k),find(themodel_1.metSps==k)); 
+    [singleFBAsol{k,1},singleFBAmodel{k,1}]=fba(subModels{k,1});
+    writeCbModel(subModels{k,1},'xls',['JF_env_sp',num2str(k),'.xls']);
+    
+    xlwrite(['JF_env_sp',num2str(k),'.xls'],varname,'Reaction List','H1');
+    xlwrite(['JF_env_sp',num2str(k),'.xls'],varval,'Reaction List','M1');
+    
+end
+
+
+
+% print all solution to excel...
+varname=[singleFBAmodel{1,1}.Model.varname;{''};singleFBAmodel{2,1}.Model.varname];
+varval=[singleFBAsol{1, 1}.x; NaN;singleFBAsol{2, 1}.x];
+
+xlwrite(filename,{'NECom'},'allsolution','A1');
+xlwrite(filename,cellstr(Lmodel3.Model.varname),'allsolution','B1');
+xlwrite(filename,x3,'allsolution','C1');
+xlwrite(filename,{'OptCom'},'allsolution','D1');
+xlwrite(filename,cellstr(Lmodel2.Model.varname),'allsolution','E1');
+xlwrite(filename,x2,'allsolution','F1');
+xlwrite(filename,{'JointFBA'},'allsolution','G1');
+xlwrite(filename,cellstr(Lmodel1.Model.varname),'allsolution','H1');
+xlwrite(filename,x1,'allsolution','I1');
+xlwrite(filename,{'FBA with JointFBA predicted environment'},'allsolution','J1');
 
 
 

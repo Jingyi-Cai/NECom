@@ -83,7 +83,8 @@ n=length(model.rxns);
 % number of mets:
 m=length(model.mets);
 % add variables: flux-->v
-Lmodel=add_variables(Lmodel,model.c(:), model.lb, model.ub);
+varnames=char(strcat('v_',model.rxns));
+Lmodel=add_variables(Lmodel,model.c(:), model.lb, model.ub,char(ones(1,length(model.lb))*'C'),varnames);
 history_length=0;
 history_length_v_1=history_length;
 current_length_v_1=history_length_v_1+n;

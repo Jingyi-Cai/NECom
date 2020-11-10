@@ -1,17 +1,17 @@
 % 
-% demonstrative example for NECom and FShaP simulations
-% Jingyi Cai 2019-8
-% Jingyi Cai 2020-10 
+% demonstrative example for NECom and simulations
+% This example is requested by a reviewer. 
+% Jingyi Cai 2020-10
 clear;clc;
 thesolver='gurobi'; % choose from 'baron','bonmin' and 'gurobi', bonmin solver requires installation of OPTI toolbox on Windows 
 % load the community model, which consists of two individual models,
 %load ../themodel.mat themodel
 
 % or directly create the community model using CobraToolbox
-filename='pd.xls';
-createModelCase1
 
-writeCbModel(themodel0,'xls',filename)
+createModelCase2
+
+
 
 % spreadsheet version of this model presents in 'Reactions',and
 % 'Metabolites' page in pd.xls
@@ -39,30 +39,29 @@ N species. )
 
 % now configure parameters for simulation
 
-% the metabolites may only be exchanged between sp1 and sp2 are A and B(other metabolite 
+% the metabolites may only be exchanged between sp1 and sp2 is A(other metabolite 
 % such as proton can be exchanged between organisms and environment, so not considered here)
-% let's label A and B a metabolite number 1,2 repectively
-% the associated crossfeeding reactions are EX_A_2_sp1 EX_B_2_sp1 EX_A_2_sp2 EX_B_2_sp2
+% let's label A a metabolite number 1
+% the associated crossfeeding reactions are EX_A_2_sp1  EX_A_2_sp2 
 % they are given an order 
-parameters.cf_order=[1;2;3;4];
+parameters.cf_order=[1;2];
 % find their reaction indices in the community model:
-parameters.sub_indExSpi=[41;42;48;49];
-% amount of crossfeeding reactions:
+parameters.sub_indExSpi=[41;48];
+% number of crossfeeding reactions:
 parameters.numSub_ExRxn=length(parameters.sub_indExSpi);
-% since they are crossfeeding reactions for A,B,A,B, so their metabolite number are:  
-parameters.spsInds=[1 2 1 2];
-% and they belong to sp1,sp1,sp2, sp2, respectively:
-parameters.sub_exSpi=[1;1;2;2];
+% since they are crossfeeding reactions for A,A so their metabolite number are:  
+parameters.spsInds=[1 1];
+% and they belong to sp1,sp2 respectively:
+parameters.sub_exSpi=[1;2];
 % 
 % crossfeeding reactions that can affect the availability of substrate
-% uptaken by other species: EX_A_2_sp2 EX_B_2_sp2 EX_A_2_sp1 EX_B_2_sp1 and
+% uptaken by other species: EX_A_2_sp2  EX_A_2_sp1  and
 % their indices:
-parameters.other_Ex_all=[48;49;41;42];
+parameters.other_Ex_all=[48;41];
 % they belong to sp2,sp2,sp1,sp1 respectively:
-parameters.other_sp_ind=[2;2;1;1];
+parameters.other_sp_ind=[2;1];
 % mapping to the reaction they may affect(refering to cf_order):
-parameters.order_other=[1;2;3;4];
-
+parameters.order_other=[1;2];
 
 %---------------Final state predictions----------------------------
 % run Joint-FBA simulation
@@ -79,12 +78,15 @@ Indrxns=find(themodel.rxnSps>=1);
 allfluxes=[x1(Indrxns),x2(Indrxns),x3(Indrxns)];
 % if MS Office Excel install we can write it into the excel file. 
 % need to uncheck all COM Add-in in Excel options to make it works
-try xlwrite(filename,allfluxes,'Reaction List','H2');
-    fprintf('fluxes predicted by jointFBA, OptCom and NEcom has been saved in pd.xls or pd.csv\n')
+writeCbModel(themodel,'xls','modeltext.xls')
+try xlwrite('modeltext.xls',allfluxes,'Reaction List','H2');xlwrite('modeltext.xls',{'JointFBA','OptCom','NECom'},'Reaction List','H1');
+    fprintf('fluxes predicted by jointFBA, OptCom and NEcom has been saved in modeltext.xls or modeltext.csv\n')
 catch
     fprintf('fluxes predicted by jointFBA, OptCom and NEcom can be found in allfluxes matrix\n')
 end
 
+
+%{
 fprintf('Test if the flux predicted by JointFBA is feasible to NECom...');
 externalconstr.lbindices=1:length(themodel.rxns);
 externalconstr.ubindices=1:length(themodel.rxns);
@@ -106,54 +108,40 @@ fprintf(['The flux predicted by OptCom is ',infotest2, ' to NECom\n']);
 %where we can call Model.computellS() to determine the minimal subset of
 %infeasible constraints and bounds
 fprintf('please open jupyter notebook and run checkInfeasibility.ipynb to find the minimal subset of constraints and bounds that JointFBA solution fails to satisfy\n')
-
-
-%-------------Fix Individual species with Joint FBA solution and------------------
-
-subModels=[];solutions={};number_sps=length(themodel.spBm);
-%fix the lb and ub of the crossfeeding reactions to the crossfeeding fluxes
-themodel_1=themodel;
-%setting environment to individual model according to predictions 
-
-posexinds=find(x1(parameters.other_Ex_all)>0);
-
-thesecInds=parameters.other_Ex_all(posexinds);
-% calculate the uptake rate based on export of other species 
-spCoef=X(parameters.other_sp_ind)./X(parameters.sub_exSpi);
-avaibleUpRates=x1(thesecInds).*spCoef(posexinds)';
-% setting all lb based on uptake availability
-themodel_1.lb(parameters.sub_indExSpi)=0;
-uptake_ids=parameters.sub_indExSpi(posexinds);
-themodel_1.lb(uptake_ids)=-avaibleUpRates;
+%------------Further Test-----------------------------------------------
+%}
 
 
 
 
 
 
-for k=1:number_sps
-    subModels{k,1}=make_sub_model(themodel_1,find(themodel_1.rxnSps==k),find(themodel_1.metSps==k)); 
-    [singleFBAsol{k,1},singleFBAmodel{k,1}]=fba(subModels{k,1});
-    writeCbModel(subModels{k,1},'xls',['JF_env_sp',num2str(k),'.xls']);
-    xlwrite(['JF_env_sp',num2str(k),'.xls'],{'FBA Fluxes'},'Reaction List','H1');
-    xlwrite(['JF_env_sp',num2str(k),'.xls'],singleFBAsol{k, 1}.x,'Reaction List','H2');
-    
-end
 
 
 
-% print all solution to excel...
 
 
-xlwrite(filename,{'NECom'},'allsolution','A1');
-xlwrite(filename,cellstr(Lmodel3.Model.varname),'allsolution','B1');
-xlwrite(filename,x3,'allsolution','C1');
-xlwrite(filename,{'OptCom'},'allsolution','D1');
-xlwrite(filename,cellstr(Lmodel2.Model.varname),'allsolution','E1');
-xlwrite(filename,x2,'allsolution','F1');
-xlwrite(filename,{'JointFBA'},'allsolution','G1');
-xlwrite(filename,cellstr(Lmodel1.Model.varname),'allsolution','H1');
-xlwrite(filename,x1,'allsolution','I1');
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
